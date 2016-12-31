@@ -2,6 +2,7 @@ package gogs
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -29,7 +30,7 @@ func NewClient(url, token string) *Client {
 }
 
 func (c *Client) doRequest(method string, resource string, query map[string]string) (*http.Response, error) {
-	req, err := http.NewRequest("GET", c.url+apiPrefix+"/users/search", nil)
+	req, err := http.NewRequest("GET", c.url+apiPrefix+resource, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -42,24 +43,21 @@ func (c *Client) doRequest(method string, resource string, query map[string]stri
 	return c.client.Do(req)
 }
 
-func (c *Client) getResponse(method string, resource string, query map[string]string) (*genericResponse, error) {
+func (c *Client) getResponse(method string, resource string, query map[string]string) ([]byte, error) {
 	res, err := c.doRequest(method, resource, query)
 	if err != nil {
 		return nil, err
 	}
 	defer res.Body.Close()
-
 	data, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		return nil, err
 	}
-
-	var response genericResponse
-
-	err = json.Unmarshal(data, &response)
-	if err != nil {
-		return nil, err
+	switch res.StatusCode {
+	case 403:
+		return nil, errors.New("Status 403")
+	case 404:
+		return nil, errors.New("Status 404")
 	}
-
-	return &response, nil
+	return data, nil
 }
