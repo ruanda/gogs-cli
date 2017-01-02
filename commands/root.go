@@ -13,13 +13,13 @@ var cfgFile string
 
 var GogsClient *gogs.Client
 
-var CmdRoot = &cobra.Command{
+var cmdRoot = &cobra.Command{
 	Use:   "gogs-cli",
 	Short: "Gogs CLI client",
 }
 
 func Execute() {
-	if err := CmdRoot.Execute(); err != nil {
+	if err := cmdRoot.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(-1)
 	}
@@ -27,8 +27,7 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(initConfig)
-	CmdRoot.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/gogs-cli.toml)")
-	CmdRoot.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	cmdRoot.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/gogs-cli.toml)")
 }
 
 func initConfig() {
@@ -44,7 +43,7 @@ func initConfig() {
 	err := viper.ReadInConfig()
 
 	if err != nil {
-		panic(fmt.Errorf("Fatal error config file: %s \n", err))
+		panic(fmt.Errorf("Fatal error config file: %s", err))
 	}
 
 	GogsClient = gogs.NewClient(
